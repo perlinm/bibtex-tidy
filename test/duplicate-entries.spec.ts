@@ -1,7 +1,7 @@
-import { strictEqual } from 'assert';
-import { bibtex, bibtexTidy, test } from './utils';
+import { strictEqual } from "node:assert";
+import { bibtex, bibtexTidy, test } from "./utils";
 
-test('duplicate key warnings', async () => {
+test("duplicate key warnings", async () => {
 	const input = bibtex`
 		@article{foo,
 			title={foo}
@@ -12,11 +12,11 @@ test('duplicate key warnings', async () => {
 		@article{bar,
 			title={bar}
 		}`;
-	const tidied1 = await bibtexTidy(input, { duplicates: ['key'] }, ['api']);
+	const tidied1 = await bibtexTidy(input, { duplicates: ["key"] }, ["api"]);
 	strictEqual(tidied1.api?.warnings.length, 1);
 });
 
-test('duplicate DOI warnings', async () => {
+test("duplicate DOI warnings", async () => {
 	const input = bibtex`
 		@article{a,
 			title={foo},
@@ -30,11 +30,11 @@ test('duplicate DOI warnings', async () => {
 			title={moo},
 			doi=123
 		}`;
-	const tidied1 = await bibtexTidy(input, { duplicates: ['doi'] }, ['api']);
+	const tidied1 = await bibtexTidy(input, { duplicates: ["doi"] }, ["api"]);
 	strictEqual(tidied1.api?.warnings.length, 1);
 });
 
-test('duplicate citation warnings', async () => {
+test("duplicate citation warnings", async () => {
 	const input = bibtex`
 		@article{a,
 				author={Smith, James},
@@ -42,6 +42,14 @@ test('duplicate citation warnings', async () => {
 		}
 		@article{b,
 				author={Smith, JA},
+				title={Something blah blah}
+		}
+		@article{c,
+				author={J. A. Smith},
+				title={Something blah blah}
+		}
+		@article{d,
+				author={James Smith},
 				title={Something blah blah}
 		}
 		Issue #11 - these should not be flagged as duplicates
@@ -77,11 +85,11 @@ test('duplicate citation warnings', async () => {
 			title={Foo},
 			number={2}
 		}`;
-	const tidied = await bibtexTidy(input, { duplicates: ['citation'] }, ['api']);
-	strictEqual(tidied.api?.warnings.length, 1);
+	const tidied = await bibtexTidy(input, { duplicates: ["citation"] }, ["api"]);
+	strictEqual(tidied.api?.warnings.length, 2);
 });
 
-test('duplicate abstract warnings', async () => {
+test("duplicate abstract warnings", async () => {
 	const input = bibtex`
 		@article{a,
 			title={foo},
@@ -96,6 +104,6 @@ test('duplicate abstract warnings', async () => {
 			abstract={Something completely different}
 		}`;
 
-	const tidied = await bibtexTidy(input, { duplicates: ['abstract'] }, ['api']);
+	const tidied = await bibtexTidy(input, { duplicates: ["abstract"] }, ["api"]);
 	strictEqual(tidied.api?.warnings.length, 1);
 });

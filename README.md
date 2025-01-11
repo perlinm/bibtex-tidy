@@ -7,8 +7,9 @@ Tidy bibtex files. [Try it out](https://flamingtempura.github.io/bibtex-tidy/).
 There are several ways you can use bibtex-tidy:
 * [In your browser](https://flamingtempura.github.io/bibtex-tidy/)
 * [CLI](#sec-cli)
-* As a pre-commit-hook
+* [As a pre-commit-hook](#sec-precommit)
 * [Javascript/Typescript API](#sec-api)
+* [Docker](#sec-docker)
 
 ## Example
 
@@ -17,7 +18,7 @@ Before:
 ```bibtex
 @ARTICLE {feinberg1983technique,
   title={A technique for radiolabeling DNA restriction endonuclease fragments to high specific activity},
-author={Feinberg, Andrew P and Vogelstein, Bert},
+author={Feinberg, Andrew P. and Vogelstein, Bert},
   journal    = {Analytical biochemistry},
   volume = 132,
   number=1,
@@ -26,7 +27,7 @@ author={Feinberg, Andrew P and Vogelstein, Bert},
   publisher={Elsevier},}
 @article{miles1984qualitative,
     title={Qualitative data analysis: A sourcebook},
-    author={Miles, Matthew B and Huberman, A Michael and Saldana, J},
+    author={Miles, Matthew B. and Huberman, A. Michael and Saldana, J.},
     journal={Beverly Hills},
     year=1984
 }
@@ -37,7 +38,7 @@ After `bibtex-tidy references.bib`:
 ```bibtex
 @article{feinberg1983technique,
   title         = {A technique for radiolabeling DNA restriction endonuclease fragments to high specific activity},
-  author        = {Feinberg, Andrew P and Vogelstein, Bert},
+  author        = {Feinberg, Andrew P. and Vogelstein, Bert},
   year          = 1983,
   journal       = {Analytical biochemistry},
   publisher     = {Elsevier},
@@ -47,13 +48,13 @@ After `bibtex-tidy references.bib`:
 }
 @article{miles1984qualitative,
   title         = {Qualitative data analysis: A sourcebook},
-  author        = {Miles, Matthew B and Huberman, A Michael and Saldana, J},
+  author        = {Miles, Matthew B. and Huberman, A. Michael and Saldana, J.},
   year          = 1984,
   journal       = {Beverly Hills}
 }
 ```
 
-<a name="sec-cli" />
+<a name="sec-cli"></a>
 
 ## CLI
 
@@ -239,7 +240,7 @@ bibtex-tidy references.bib
       
 ```
 
-<a name="sec-api" />
+<a name="sec-api"></a>
 
 ## Javascript/Typescript API
 
@@ -255,12 +256,26 @@ tidy.tidy(bibtex, { curly: true });
 
 Documentation for the options can be found [here](https://github.com/FlamingTempura/bibtex-tidy/blob/master/src/__generated__/optionsType.ts)
 
+<a name="sec-precommit"></a>
+
+## Pre-Commit Hook
+
+If you keep your bibtex files in a git repository, you can run bibtex-tidy each time you commit using [pre-commit](https://pre-commit.com/):
+
+```yaml
+repos:
+-   repo: https://github.com/FlamingTempura/bibtex-tidy
+    rev: v1.14.0 # see changelog for latest version
+    hooks:
+    -   id: bibtex-tidy
+        args: ['--align=100', '--curly'] # any other settings
+```
+
+<a name="sec-docker"></a>
+
 ## Docker
 
 The web application can be deployed locally using the provided Docker configuration:
 
-1. Build the Docker container: `docker build -t bibtex-tidy . -f docker/Dockerfile`
-2. Start the docker container as a service: `cd docker && docker-compose up -d`
-3. Visit the web application at http://localhost:8080 and do your BibTeX work
-4. Stop the docker service, when you don't need it anymore: `cd docker && docker-compose down`
-
+1. Build and start the container: `docker compose -f docker/docker-compose.yml up`
+2. Visit the web application at http://localhost:8080 and do your BibTeX work

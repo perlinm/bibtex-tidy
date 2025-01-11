@@ -7,12 +7,9 @@
 		"strict": true,
 		"resolveJsonModule": true,
 		"noUncheckedIndexedAccess": true,
-		"lib": ["ESNext", "DOM", "DOM.Iterable"]
+		"downlevelIteration": true,
+		"lib": ["ESNext", "DOM", "DOM.Iterable"],
+		"target": "ES2018"
 	},
-	"include": [
-		"src/**/*",
-		"test/**/*",
-		"build.ts",
-		"node_modules/svelte/types/runtime/ambient.d.ts"
-	]
+	"include": ["src/**/*", "test/**/*", "build.ts"]
 }

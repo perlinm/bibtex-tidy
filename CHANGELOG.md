@@ -156,3 +156,33 @@ Providing multiple input files will only work in `--modify`/`-m` mode.
 - Added option to convert all months to three letter abbreviations (#351)
 - Update node version in docker container ot prevent build error
 - Fix --sort-fields CLI command in web UI (#404)
+
+### v1.12.0
+
+- Fix double braces adding closing braces (#410)
+- Upgrade dependencies
+- Accessibility tweaks
+
+### v1.13.0
+
+- Parse authors when checking entry similarity (#424)
+- Fix font encoding
+- Release v1.12.0
+- Linting
+- Add fonts to repo instead of downloading on each build
+- Prettier
+- Fix double braces adding closing braces (#410)
+- Upgrade dependencies
+- upgrade ts & build
+- Upgrade deps
+- Accessibility tweak
+- Upgrade dependencies
+
+### v1.14
+
+- Support filenames with spaces (#416, #428)
+- Do not flatten braces which contain commands (#407, #423)
+- Do not encode special characters in verbatim fields like url (#415)
+- Pre-commit hook changed to script so that dev dependencies are not required (#427)
+- Fix math escaping (#430)
+- Upgrade dependencies

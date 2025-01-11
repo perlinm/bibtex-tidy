@@ -1,14 +1,15 @@
-import type { EntryNode, RootNode } from './bibtexParser';
-import type { DuplicateRule, MergeStrategy } from './optionUtils';
-import { alphaNum } from './utils';
-import { getEntries } from '.';
-import type { Warning } from '.';
+import type { Cache } from "./cache";
+import type { DuplicateRule, MergeStrategy } from "./optionUtils";
+import type { EntryNode } from "./parsers/bibtexParser";
+import { parseNameList } from "./parsers/nameFieldParser";
+import type { Warning } from "./tidy";
+import { alphaNum } from "./utils";
 
 export function checkForDuplicates(
-	ast: RootNode,
-	valueLookup: Map<EntryNode, Map<string, string | undefined>>,
+	entries: EntryNode[],
+	cache: Cache,
 	duplicateRules?: DuplicateRule[],
-	merge?: MergeStrategy
+	merge?: MergeStrategy,
 ): { entries: Set<EntryNode>; warnings: Warning[] } {
 	const rules = new Map<DuplicateRule, boolean>();
 
@@ -18,9 +19,9 @@ export function checkForDuplicates(
 		}
 	}
 
-	if (!rules.has('key')) {
+	if (!rules.has("key")) {
 		// always check key uniqueness
-		rules.set('key', false);
+		rules.set("key", false);
 	}
 
 	const duplicateEntries = new Set<EntryNode>();
@@ -33,15 +34,13 @@ export function checkForDuplicates(
 	const citations = new Map<string, EntryNode>();
 	const abstracts = new Map<string, EntryNode>();
 
-	for (const entry of getEntries(ast)) {
-		const entryValues = valueLookup.get(entry)!;
-
+	for (const entry of entries) {
 		for (const [rule, doMerge] of rules) {
 			let duplicateOf: EntryNode | undefined;
 			let warning: string | undefined;
 
 			switch (rule) {
-				case 'key': {
+				case "key": {
 					if (!entry.key) continue;
 					// Bibtex keys are case insensitive
 					// https://web.archive.org/web/20210422110817/https://maverick.inria.fr/~Xavier.Decoret/resources/xdkbibtex/bibtex_summary.html
@@ -55,8 +54,8 @@ export function checkForDuplicates(
 					break;
 				}
 
-				case 'doi': {
-					const doi = alphaNum(entryValues.get('doi') ?? '');
+				case "doi": {
+					const doi = alphaNum(cache.lookupEntryValue(entry, "doi"));
 					if (!doi) continue;
 					duplicateOf = dois.get(doi);
 					if (!duplicateOf) {
@@ -67,17 +66,17 @@ export function checkForDuplicates(
 					break;
 				}
 
-				case 'citation': {
-					const ttl = entryValues.get('title');
-					const aut = entryValues.get('author');
+				case "citation": {
+					const ttl = cache.lookupEntryValue(entry, "title");
+					const aut = cache.lookupEntryValue(entry, "author");
 					// Author/title can be identical for numbered reports https://github.com/FlamingTempura/bibtex-tidy/issues/364
-					const num = entryValues.get('number');
+					const num = cache.lookupEntryValue(entry, "number");
 					if (!ttl || !aut) continue;
 					const cit: string = [
-						alphaNum(aut.split(/,| and/)[0]!),
+						alphaNum(parseNameList(aut)[0]?.last ?? aut),
 						alphaNum(ttl),
-						alphaNum(num ?? '0'),
-					].join(':');
+						alphaNum(num ?? "0"),
+					].join(":");
 					duplicateOf = citations.get(cit);
 					if (!duplicateOf) {
 						citations.set(cit, entry);
@@ -87,8 +86,8 @@ export function checkForDuplicates(
 					break;
 				}
 
-				case 'abstract': {
-					const abstract = alphaNum(entryValues.get('abstract') ?? '');
+				case "abstract": {
+					const abstract = alphaNum(cache.lookupEntryValue(entry, "abstract"));
 					const abs = abstract.slice(0, 100);
 					if (!abs) continue;
 					duplicateOf = abstracts.get(abs);
@@ -107,9 +106,9 @@ export function checkForDuplicates(
 			}
 			if (warning) {
 				warnings.push({
-					code: 'DUPLICATE_ENTRY',
+					code: "DUPLICATE_ENTRY",
 					rule,
-					message: `Duplicate ${doMerge ? 'removed' : 'detected'}. ${warning}`,
+					message: `Duplicate ${doMerge ? "removed" : "detected"}. ${warning}`,
 				});
 			}
 		}
@@ -121,30 +120,30 @@ export function checkForDuplicates(
 function mergeEntries(
 	merge: MergeStrategy | undefined,
 	duplicateOf: EntryNode,
-	entry: EntryNode
+	entry: EntryNode,
 ): void {
 	if (!merge) return;
 	switch (merge) {
-		case 'last':
+		case "last":
 			duplicateOf.key = entry.key;
 			duplicateOf.fields = entry.fields;
 			break;
 
-		case 'combine':
-		case 'overwrite':
+		case "combine":
+		case "overwrite":
 			for (const field of entry.fields) {
 				const existing = duplicateOf.fields.find(
-					(f) => f.name.toLocaleLowerCase() === field.name.toLocaleLowerCase()
+					(f) => f.name.toLocaleLowerCase() === field.name.toLocaleLowerCase(),
 				);
 				if (!existing) {
 					duplicateOf.fields.push(field);
-				} else if (merge === 'overwrite') {
+				} else if (merge === "overwrite") {
 					existing.value = field.value;
 				}
 			}
 			break;
 		// TODO: case 'keep-both'
-		case 'first':
+		case "first":
 			return;
 	}
 }

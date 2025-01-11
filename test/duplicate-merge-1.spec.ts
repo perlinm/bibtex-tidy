@@ -1,5 +1,5 @@
-import { strictEqual } from 'assert';
-import { bibtex, bibtexTidy, test } from './utils';
+import { strictEqual } from "node:assert";
+import { bibtex, bibtexTidy, test } from "./utils";
 
 const input = bibtex`
 %references
@@ -23,7 +23,7 @@ author="Feinberg, Andrew P and Vogelstein, Bert",
     doi = {1.1}
     }
 @inproceedings{Smith2009,
-  author="Caroline JA Smith",
+  author="Smith, Caroline JA",
   year=2009,
   month=dec,
   title={{Quantum somethings}},
@@ -32,7 +32,16 @@ author="Feinberg, Andrew P and Vogelstein, Bert",
 
 % test duplicate (author and title)
 @inproceedings{Smith2009a,
-  author="Caroline JA Smith",
+  author="Smith, Caroline JA",
+  year=2009,
+  month=dec,
+  title={{Quantum somethings}},
+  journal={Journal of {B}lah},
+  booktitle={blah}
+}
+
+@inproceedings{Smith2009b,
+  author="Smith, Caroline",
   year=2009,
   month=dec,
   title={{Quantum somethings}},
@@ -60,7 +69,7 @@ title = {Methods for Research}
   }
   % another comment
   @inproceedings{Smith2009,
-    author="Caroline JA Smith",
+    author="Smith, Caroline JA",
   year=2009,
   month=dec,
   title={{Quantum somethings}},journal={Journal of {B}lah}
@@ -94,7 +103,7 @@ const output = bibtex`
   booktitle     = {things}
 }
 @inproceedings{Smith2009,
-  author        = "Caroline JA Smith",
+  author        = "Smith, Caroline JA",
   year          = 2009,
   month         = dec,
   title         = {{Quantum somethings}},
@@ -123,16 +132,16 @@ const output = bibtex`
 % another last thing
 `;
 
-test('merge duplicates', async () => {
+test("merge duplicates", async () => {
 	const tidied = await bibtexTidy(input, { duplicates: true, merge: true });
 	const warnings = tidied.api?.warnings.filter(
-		(w) => w.code === 'DUPLICATE_ENTRY'
+		(w) => w.code === "DUPLICATE_ENTRY",
 	);
 	strictEqual(tidied.bibtex, output);
 	strictEqual(
 		warnings?.filter(
-			(warning) => warning.code === 'DUPLICATE_ENTRY' && warning.rule !== 'key'
+			(warning) => warning.code === "DUPLICATE_ENTRY" && warning.rule !== "key",
 		).length,
-		3
+		4,
 	);
 });
